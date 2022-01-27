@@ -6,7 +6,6 @@ import appConfig from '../config.json'
 
 // componente React
 function Titulo(props) {
-    console.log(props)
     const Tag  = props.tag||'h1'
     return (
         <>
@@ -15,18 +14,20 @@ function Titulo(props) {
             ${Tag}{
                 font-size:24px;
                 font-weight:600;
-                color:${appConfig.theme.colors.neutrals['050']};
+                color:${appConfig.theme.colors.neutrals['000']};
             }
             `}</style>
         </>
     )
 }
 
+
+
 export default function PaginaInicial() {
     //const username = 'mateusAnjos';
-  
     const[username, setUsername] = React.useState('')
-    const route = useRouter()
+    const route = useRouter()// roteamento
+    
 
     return (
       <>
@@ -56,6 +57,7 @@ export default function PaginaInicial() {
             {/* Formulário */}
             <Box
               as="form"
+              autoComplete="off"
               onSubmit={function (event){
                   //previne que o formulario recarregue a pagina, comportamento default
                   event.preventDefault();
@@ -86,7 +88,7 @@ export default function PaginaInicial() {
                     setUsername(valor)
                 }}
               /> */}
-              {/* este textfiel é a mesma coisa que o input acima, mas estilizado */}
+              {/* este textfield é a mesma coisa que o input acima, mas estilizado */}
               <TextField
                 placeholder="Digite seu usuário do GitHub"
                 onChange = {function (event){
@@ -94,6 +96,7 @@ export default function PaginaInicial() {
                     const valor = event.target.value
                     //trocar o valor
                     setUsername(valor)
+                    
                 }}
                 fullWidth
                 textFieldColors={{
@@ -109,6 +112,7 @@ export default function PaginaInicial() {
                 type='submit'
                 label='Entrar'
                 fullWidth
+                disabled={username.length<3}//validação que desabilita o botão caso username seja menor que 3
                 buttonColors={{
                   contrastColor: appConfig.theme.colors.neutrals["000"],
                   mainColor: appConfig.theme.colors.primary[400],
@@ -141,11 +145,12 @@ export default function PaginaInicial() {
                   borderRadius: '50%',
                   marginBottom: '16px',
                 }}
-                src={`https://github.com/${username}.png`}
+                src={`${username.length>2 ?`https://github.com/${username}.png`:'https://wallpaperaccess.com/full/4547519.jpg'}`}
               />
              
               <Text
                 variant="body4"
+                hidden={username.length<3}
                 styleSheet={{
                   color: appConfig.theme.colors.neutrals[200],
                   backgroundColor: appConfig.theme.colors.neutrals[900],
@@ -153,7 +158,7 @@ export default function PaginaInicial() {
                   borderRadius: '1000px'
                 }}
               >
-                {username}
+                {username.length>2? username:""}
               </Text>
             </Box>
             {/* Photo Area */}
