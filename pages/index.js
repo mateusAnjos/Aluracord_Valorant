@@ -1,34 +1,8 @@
 import {Box, Button, Text, TextField, Image } from '@skynexui/components'
+import React from 'react';
+import {useRouter} from "next/router"
 import appConfig from '../config.json'
 
-function GlobalStyle() {
-    return (
-      <style global jsx>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          list-style: none;
-        }
-        body {
-          font-family: 'Open Sans', sans-serif;
-        }
-        /* App fit Height */ 
-        html, body, #__next {
-          min-height: 100vh;
-          display: flex;
-          flex: 1;
-        }
-        #__next {
-          flex: 1;
-        }
-        #__next > * {
-          flex: 1;
-        }
-        /* ./App fit Height */ 
-      `}</style>
-    );
-  }
 
 // componente React
 function Titulo(props) {
@@ -41,7 +15,7 @@ function Titulo(props) {
             ${Tag}{
                 font-size:24px;
                 font-weight:600;
-                color:${appConfig.theme.colors.neutrals['400']};
+                color:${appConfig.theme.colors.neutrals['050']};
             }
             `}</style>
         </>
@@ -49,16 +23,18 @@ function Titulo(props) {
 }
 
 export default function PaginaInicial() {
-    const username = 'mateusAnjos';
+    //const username = 'mateusAnjos';
   
+    const[username, setUsername] = React.useState('')
+    const route = useRouter()
+
     return (
       <>
-        <GlobalStyle />
         <Box
           styleSheet={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backgroundColor: appConfig.theme.colors.primary[500],
-            backgroundImage: 'url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)',
+            //backgroundColor: appConfig.theme.colors.primary[500],
+            backgroundImage: 'url(https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt881609ccc5207499/60b1901d3aac347374b5d9d1/VALORANT_YR1_ArticleHero_16_9.jpg)',
             backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
           }}
         >
@@ -80,17 +56,45 @@ export default function PaginaInicial() {
             {/* Formulário */}
             <Box
               as="form"
+              onSubmit={function (event){
+                  //previne que o formulario recarregue a pagina, comportamento default
+                  event.preventDefault();
+                  //Decidir qual página vai aparecer quando submeter
+                  route.push('/chat/')
+                
+
+              }}
               styleSheet={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
               }}
             >
-              <Titulo tag="h2">Mr. {username}, welcome back...</Titulo>
+              <Titulo tag="h2">Olá agente {username}!</Titulo>
               <Text variant="body3" styleSheet={{ marginBottom: '32px', color: appConfig.theme.colors.neutrals[200] }}>
                 {appConfig.name}
               </Text>
-  
+              
+              {/* <input
+                type="text"
+                placeholder='Digite seu usuário GitHub'
+                value={username}
+                onChange = {function (event){
+                    console.log("usuário digitou", event.target.value)
+                    //onde esta o valor?
+                    const valor = event.target.value
+                    //trocar o valor
+                    setUsername(valor)
+                }}
+              /> */}
+              {/* este textfiel é a mesma coisa que o input acima, mas estilizado */}
               <TextField
+                placeholder="Digite seu usuário do GitHub"
+                onChange = {function (event){
+                    //onde esta o valor?
+                    const valor = event.target.value
+                    //trocar o valor
+                    setUsername(valor)
+                }}
                 fullWidth
                 textFieldColors={{
                   neutral: {
@@ -139,6 +143,7 @@ export default function PaginaInicial() {
                 }}
                 src={`https://github.com/${username}.png`}
               />
+             
               <Text
                 variant="body4"
                 styleSheet={{
@@ -158,15 +163,3 @@ export default function PaginaInicial() {
     );
   }
 
-// function HomePage() {
-//     //jsx = codigo html em um arquivo js
-//     return (
-//         <div>
-//             <GlobalStyle/>
-//             <Titulo tag='h2'>Mr. Anderson, welcome back...</Titulo>
-//             <h2>Discord - Alura Matrix</h2>
-//         </div>
-//     )
-// }
-
-//export default HomePage
