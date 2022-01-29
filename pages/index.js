@@ -34,7 +34,7 @@ export default function PaginaInicial() {
         <Box
           styleSheet={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            //backgroundColor: appConfig.theme.colors.primary[500],
+            //backgroundColor: appConfig.theme.colors.primary[600],
             backgroundImage: 'url(https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt881609ccc5207499/60b1901d3aac347374b5d9d1/VALORANT_YR1_ArticleHero_16_9.jpg)',
             backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
           }}
@@ -62,7 +62,7 @@ export default function PaginaInicial() {
                   //previne que o formulario recarregue a pagina, comportamento default
                   event.preventDefault();
                   //Decidir qual página vai aparecer quando submeter
-                  route.push('/chat/')
+                  route.push(`/chat?username=${username}`)
                 
 
               }}

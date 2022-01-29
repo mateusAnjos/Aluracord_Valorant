@@ -1,28 +1,68 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
-import {useRouter} from "next/router"
+import { useRouter } from "next/router"
+import { createClient } from '@supabase/supabase-js'
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker'
 
 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzQwNDA5MSwiZXhwIjoxOTU4OTgwMDkxfQ.kevUGOFed_VTBX0fNMeJ6S2ElBy8YR1yZS_E93mx9os'
+const SUPABASE_URL = 'https://gubfbrqyrdngcryfcuoq.supabase.co'
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+function messageListListener(addMessage){
+    return supabaseClient
+        .from('messageList') 
+        .on('INSERT',(liveResponse)=>{
+            addMessage(liveResponse.new)
+        })
+        .subscribe();
+}
 
 export default function Chat() {
-
+    const route = useRouter()
+    const userLogged = route.query.username
     const [message, setMessage] = React.useState('')
     const [messageList, setMessageList] = React.useState([])
+
+
+    React.useEffect(() => {
+        supabaseClient
+            .from('messageList')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({ data }) => {
+                setMessageList(data)
+            })
+            messageListListener((newMessage)=>{
+                setMessageList((realtimeMessageList)=>{
+                    return[newMessage, ...realtimeMessageList]
+                })
+            })
+    }, []);
+
 
     function handleNewMessage(newMessage) {
         const message = {
             text: newMessage,
-            from: 'MateusAnjos',
-            id: messageList.length + 1,
+            from: userLogged,
         }
-        setMessageList([ message,...messageList])
+
+        supabaseClient
+            .from('messageList')
+            .insert([
+                message
+            ])
+            .then(({ data }) => {
+                // setMessageList([data[0], ...messageList])
+            })
         setMessage('')
     }
 
+
+
     return (
-        <Box
+        <Box//caixa englobando fundo de tela
             styleSheet={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 //backgroundColor: appConfig.theme.colors.primary[500],
@@ -31,7 +71,7 @@ export default function Chat() {
                 color: appConfig.theme.colors.neutrals['000']
             }}
         >
-            <Box
+            <Box //Caixa maior englobando tudo
                 styleSheet={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -46,7 +86,7 @@ export default function Chat() {
                 }}
             >
                 <Header />
-                <Box
+                <Box // caixa onde será renderizado a MessageList
                     styleSheet={{
                         position: 'relative',
                         display: 'flex',
@@ -59,14 +99,18 @@ export default function Chat() {
                     }}
                 >
                     <MessageList messageList={messageList} />
-                    <Box
+                    <Box //caixa onde está a caixade texto
                         as="form"
                         styleSheet={{
                             display: 'flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
+
                         }}
+
                     >
-                        <TextField
+
+                        <TextField //caixa ondeo texto é inserido
 
                             value={message}
                             // onChange={function (event){
@@ -90,7 +134,8 @@ export default function Chat() {
                             placeholder="Insira sua mensagem aqui..."
                             type="textarea"
                             styleSheet={{
-                                width: '100%',
+                                minHeight: '48px',
+                                width: '90%',
                                 border: '0',
                                 resize: 'none',
                                 borderRadius: '5px',
@@ -99,6 +144,36 @@ export default function Chat() {
                                 marginRight: '12px',
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
+                        />
+                        {/* Callback */}
+                        <ButtonSendSticker
+                            onStickerClick={(sticker) => {
+                                console.log('salva sticker banco')
+                                handleNewMessage(':sticker:' + sticker)
+                            }}
+                        />
+                        <Button
+                            iconName="arrowRight"
+                            label="Send"
+                            onClick={() => {
+                                handleNewMessage(message)
+                            }}
+                            buttonColors={{
+                                contrastColor: appConfig.theme.colors.neutrals["000"],
+                                mainColor: appConfig.theme.colors.primary[400],
+                                mainColorLight: appConfig.theme.colors.primary[400],
+                                mainColorStrong: appConfig.theme.colors.primary[600],
+                            }}
+                            styleSheet={{
+                                minHeight: '48px',
+                                border: '0',
+                                resize: 'none',
+                                borderRadius: '5px',
+                                padding: '6px 8px',
+                                backgroundColor: appConfig.theme.colors.neutrals[800],
+                                marginRight: '12px',
+                            }}
+
                         />
                     </Box>
                 </Box>
@@ -112,25 +187,26 @@ function Header() {
 
     return (
         <>
-            <Box styleSheet={{ 
-                width: '100%', 
-                marginBottom: '16px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                color: appConfig.theme.colors.primary[400],
+            <Box //caixa contendo texto do cabeçalho
+                styleSheet={{
+                    width: '100%',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    color: appConfig.theme.colors.primary[400],
                 }} >
                 <Text variant='heading3'>
                     Mission Log
                 </Text>
-                <Button
-                buttonColors={{
-                    contrastColor: appConfig.theme.colors.neutrals["000"],
-                    mainColor: appConfig.theme.colors.primary[400],
-                    mainColorLight: appConfig.theme.colors.primary[400],
-                    mainColorStrong: appConfig.theme.colors.primary[600],
-                  }}
-                    onClick={function (){
+                <Button //botão de logout
+                    buttonColors={{
+                        contrastColor: appConfig.theme.colors.neutrals["000"],
+                        mainColor: appConfig.theme.colors.primary[400],
+                        mainColorLight: appConfig.theme.colors.primary[400],
+                        mainColorStrong: appConfig.theme.colors.primary[600],
+                    }}
+                    onClick={function () {
                         //Decidir qual página vai aparecer quando submeter
                         route.push('')
                     }}
@@ -145,7 +221,6 @@ function Header() {
 }
 
 function MessageList(props) {
-    console.log(props.messageList);
     return (
         <Box
             tag="ul"
@@ -156,12 +231,12 @@ function MessageList(props) {
                 flex: 1,
                 color: appConfig.theme.colors.neutrals["000"],
                 marginBottom: '16px',
-                
+
             }}
         >
             {props.messageList.map((message) => {
                 return (
-                    <Text
+                    <Text //mensagem a ser renderizada
                         key={message.id}
                         tag="li"
                         styleSheet={{
@@ -174,12 +249,12 @@ function MessageList(props) {
                             }
                         }}
                     >
-                        <Box
+                        <Box //caixa onde cada msg é renderizada
                             styleSheet={{
                                 marginBottom: '8px',
                             }}
                         >
-                            <Image
+                            <Image //imagem de quem enviou a msg
                                 styleSheet={{
                                     width: '20px',
                                     height: '20px',
@@ -189,24 +264,32 @@ function MessageList(props) {
                                 }}
                                 src={`https://github.com/${message.from}.png`}
                             />
-                            <Text tag="strong"
+                            <Text //nome de quem enviou a msg
+                                tag="strong"
                                 styleSheet={{
                                     color: appConfig.theme.colors.primary[400]
                                 }}>
                                 {message.from}
                             </Text>
-                            <Text
+                            <Text // texto da data e hora da msg
                                 styleSheet={{
                                     fontSize: '10px',
                                     marginLeft: '8px',
-                                    color: appConfig.theme.colors.neutrals[300],
+                                    color: appConfig.theme.colors.neutrals[100],
                                 }}
                                 tag="span"
                             >
                                 {(new Date().toLocaleString())}
                             </Text>
                         </Box>
-                        {message.text}
+                        {message.text.startsWith(':sticker:')
+                            ? (
+                                <Image src={message.text.replace(':sticker:', '')} />
+                            )
+                            : (
+                                message.text
+                            )}
+
                     </Text>
                 )
             })}
